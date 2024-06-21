@@ -78,6 +78,7 @@ function updateGrowth(index) {
 }
 
 function mousePressed() {
+    console.log("mousePressed detected");
     triggerRipple(Math.floor(mouseX / 41.6), Math.floor(mouseY / 41.6));
 }
 
@@ -125,16 +126,19 @@ function checkHoverDisturbance(x, y) {
 }
 
 function touchStarted() {
+    console.log("touchStarted detected");
     checkHoverDisturbance(touchX, touchY);
     return false;  // Prevent default behavior
 }
 
 function touchMoved() {
+    console.log("touchMoved detected");
     checkHoverDisturbance(touchX, touchY);
     return false;  // Prevent default behavior
 }
 
 function touchEnded() {
+    console.log("touchEnded detected");
     triggerRipple(Math.floor(touchX / 41.6), Math.floor(touchY / 41.6));
     return false;  // Prevent default behavior
 }
