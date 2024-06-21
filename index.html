@@ -3,506 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPIC•EPIC•EPIC•EPIC</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-    />
-    <link rel="stylesheet" href="./assets/css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script> <!-- Add p5.js library -->
+    <title>Interactive Grid with Ripple and Hover Effects</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1; /* Ensure the canvas is behind all content */
-        }
+        body { margin: 0; overflow: hidden; }
     </style>
 </head>
 <body>
-    <main>
-        <!-- Page 1: Introduction and Auction Link -->
-        <section class="page1">
-            <img
-                src="https://raw.githubusercontent.com/snoop-frog/cipe/main/0D0B7ECA-DB64-4620-ADFF-D24FF6AE21DE.png"
-                alt="EPIC Rune Logo"
-                class="logo"
-            />
-            <h1>EPIC•EPIC•EPIC•EPIC</h1>
-            <p>
-                THE ONLY RUNE THAT ETCHED WITH THE FIRST EPIC SAT SINCE ORDINALS AND RUNE PROTOCOL
-            </p>
-            <a
-                href="https://bitcoinmagazine.com/markets/one-of-only-four-bitcoin-epic-sats-just-auctioned-off-for-over-2-1-million"
-                class="auction-link"
-                target="_blank"
-            >
-                <i class="fa-regular fa-newspaper"></i> THE EPIC SAT WAS ACQUIRED FOR 33.3BTC IN AN AUCTION
-            </a>
-            <div class="button-container">
-                <a
-                    href="https://magiceden.io/runes/EPIC%E2%80%A2EPIC%E2%80%A2EPIC%E2%80%A2EPIC"
-                    target="_blank"
-                    class="blob-button"
-                >Buy $EPIC</a>
-            </div>
-        </section>
+<script>
+// Initialize variables
+let squares = [];
+let cols, rows;
+const maxGrowth = 40;  // Maximum growth level
 
-        <!-- Page 2: Image Editor -->
-        <section class="page2">
-            <div class="image-tool-container" id="imageToolContainer" style="position: relative; z-index: 3">
-                <h1 id="pageTitle" style="margin-bottom: 20px">Make Your PFP EPIC</h1>
-                <div id="editorSection" class="editor-section">
-                    <div class="close-button">
-                        <a href="#" onclick="closeEditor()">X</a>
-                    </div>
-                    <input
-                        type="text"
-                        id="searchQuery"
-                        placeholder="Search normie memes..."
-                        class="text-input"
-                    />
-                    <div class="text-input-container" id="textInputContainer" style="display: none">
-                        <input
-                            type="text"
-                            id="memeTextInput"
-                            class="text-input"
-                            placeholder="Enter meme text..."
-                        />
-                        <button id="addTextButton" class="blob-button">Add Text</button>
-                    </div>
-                    <div id="newBlobButton" style="display: none">
-                        <p>
-                            SELECT YOUR CROWN, MOVE, RESIZE AND ROTATE. TO REMOVE, DRAG OFF CANVAS
-                        </p>
-                    </div>
-                    <div id="crownContainer">
-                        <div class="crown-row">
-                            <img
-                                src="https://raw.githubusercontent.com/snoop-frog/cipe/main/3721ACB6-755A-4E05-B754-D6DB4E2B1190.png"
-                                alt="Crown 1"
-                                class="crown"
-                                onclick="addCrown(this)"
-                            />
-                            <img
-                                src="https://raw.githubusercontent.com/snoop-frog/cipe/main/0D0B7ECA-DB64-4620-ADFF-D24FF6AE21DE.png"
-                                alt="Crown 2"
-                                class="crown"
-                                onclick="addCrown(this)"
-                            />
-                        </div>
-                    </div>
-                    <div class="thumbnail-container" id="thumbnailContainer"></div>
-                    <div id="canvasContainer">
-                        <canvas id="canvas"></canvas>
-                    </div>
-                    <div class="button-container" id="buttonContainer" style="margin-top: 20px; display: none">
-                        <button id="newUploadButton" class="blob-button">Upload Image</button>
-                        <button id="downloadButton" class="blob-button">Download Image</button>
-                    </div>
-                </div>
+function setup() {
+    createCanvas(windowWidth, windowHeight);
+    cols = floor(width / 41.6);  // Calculate number of columns
+    rows = floor(height / 41.6);  // Calculate number of rows
+    for (let i = 0; i < cols * rows; i++) {
+        squares[i] = { disturbed: false, growth: 0, expanding: true, triggeredByClick: false };
+    }
+    frameRate(30);  // Set a suitable frame rate for animations
+    noStroke();
+}
 
-                <!-- Upload Container -->
-                <div
-                    class="upload-container"
-                    id="uploadContainer"
-                    style="margin-bottom: 50px; text-align: center"
-                >
-                    <label for="fileUpload">
-                        <img
-                            id="uploadCrown"
-                            src="https://raw.githubusercontent.com/snoop-frog/cipe/main/crowntrans.png"
-                            alt="Upload Image"
-                            class="pulse"
-                            style="cursor: pointer; width: 300px; height: auto"
-                        />
-                    </label>
-                    <input
-                        type="file"
-                        id="fileUpload"
-                        accept="image/*"
-                        style="display: none"
-                    />
-                </div>
-            </div>
-        </section>
+function draw() {
+    background(0);  // Start with a black background
 
-        <!-- Page 3: Links to Social Media -->
-        <section class="page3">
-            <h1>$EPIC IS EPIC</h1>
-            <div style="z-index: 10; position: relative; text-align: center">
-                <a
-                    href="https://x.com/4xepic"
-                    target="_blank"
-                    style="
-                        display: inline-block;
-                        vertical-align: middle;
-                        background: none;
-                        border: none;
-                        outline: none;
-                        text-decoration: none;
-                    "
-                >
-                    <img
-                        src="https://raw.githubusercontent.com/snoop-frog/cipe/main/xpurple8.png"
-                        alt="X Logo"
-                        style="width: 50px"
-                    />
-                </a>
-                <img
-                    src="https://raw.githubusercontent.com/snoop-frog/cipe/main/discord%20doodle2.png"
-                    alt="Discord Logo"
-                    style="width: 50px; display: inline-block; vertical-align: middle"
-                />
-                <p style="margin-top: 20px">Discord Coming Soon</p>
-            </div>
-        </section>
-    </main>
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+            let index = i + j * cols;
+            let x = i * 41.6;  // Calculate x position based on the new size
+            let y = j * 41.6;  // Calculate y position based on the new size
 
-    <script>
-        // Dynamically shape blob buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            const blobButtons = document.querySelectorAll('.blob-button');
-            blobButtons.forEach(button => {
-                const radius1 = Math.floor(Math.random() * 81) + 20; // 20% to 100%
-                const radius2 = Math.floor(Math.random() * 81) + 20;
-                const radius3 = Math.floor(Math.random() * 81) + 20;
-                const radius4 = Math.floor(Math.random() * 81) + 20;
-                const radius5 = Math.floor(Math.random() * 81) + 20;
-                const radius6 = Math.floor(Math.random() * 81) + 20;
-                const radius7 = Math.floor(Math.random() * 81) + 20;
-                const radius8 = Math.floor(Math.random() * 81) + 20;
-                button.style.borderRadius = `${radius1}% ${radius2}% ${radius3}% ${radius4}% / ${radius5}% ${radius6}% ${radius7}% ${radius8}%`;
-            });
-        });
-
-        const closeEditor = () => {
-            document.getElementById("editorSection").style.display = "none";
-        };
-
-        var canvas;
-        let lastTap = 0;
-        let isFileSelected = false;
-
-        function handleDoubleTap(event, callback) {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            clearTimeout();
-            if (tapLength < 300 && tapLength > 0) {
-                event.preventDefault();
-                callback();
-            }
-            lastTap = currentTime;
+            drawGrowingSquare(x, y, squares[index].growth);
+            updateGrowth(index);
         }
+    }
+}
 
-        document.getElementById("uploadCrown").addEventListener("click", function () {
-            document.getElementById("canvasContainer").style.display = "flex";
-            document.getElementById("crownContainer").style.display = "flex";
-            document.getElementById("searchQuery").style.display = "block";
-            // document.getElementById('uploadCrown').style.display = 'none';
-            document.getElementById("buttonContainer").style.display = "flex";
-            // document.getElementById('pageTitle').style.display = 'none';
-            document.getElementById("textInputContainer").style.display = "flex";
-            document.getElementById("editorSection").style.display = "block";
-        });
+function drawGrowingSquare(x, y, growth) {
+    let size = map(growth, 0, maxGrowth, 0, 40);
+    let secondSize = map(growth, 0, maxGrowth, 0, 38.4);
+    let thirdSize = map(growth, 0, maxGrowth, 0, 34.4);
+    let innerSize = map(growth, 0, maxGrowth, 0, 23.2);
 
-        document.getElementById("fileUpload").addEventListener("change", function (e) {
-            if (this.files && this.files.length > 0) {
-                isFileSelected = true;
-                var reader = new FileReader();
-                reader.onload = function (event) {
-                    var imgObj = new Image();
-                    imgObj.onload = function () {
-                        if (!canvas) {
-                            canvas = new fabric.Canvas("canvas", { selection: false });
-                        }
-                        var maxCanvasWidth = window.innerWidth * (window.innerWidth > 768 ? 0.9 : 0.9);
-                        var maxCanvasHeight = window.innerHeight * (window.innerHeight > 768 ? 0.5 : 0.5);
-                        var scaleFactor = Math.min(maxCanvasWidth / imgObj.width, maxCanvasHeight / imgObj.height);
-                        var canvasWidth = imgObj.width * scaleFactor;
-                        var canvasHeight = imgObj.height * scaleFactor;
-                        var image = new fabric.Image(imgObj, { selectable: false, evented: false });
-                        image.scale(scaleFactor).set({
-                            left: (canvasWidth - image.getScaledWidth()) / 2,
-                            top: (canvasHeight - image.getScaledHeight()) / 2,
-                        });
-                        canvas.clear();
-                        canvas.setDimensions({ width: canvasWidth, height: canvasHeight });
-                        canvas.add(image);
-                        canvas.centerObject(image);
-                        canvas.renderAll();
+    fill(0);  // Outermost black
+    rect(x, y, 40, 40);
+    fill(168, 36, 212);  // Second layer purple
+    rect(x + 20 - secondSize / 2, y + 20 - secondSize / 2, secondSize, secondSize);
+    fill(0);  // Third layer black
+    rect(x + 20 - thirdSize / 2, y + 20 - thirdSize / 2, thirdSize, thirdSize);
+    fill(168, 36, 212);  // Innermost purple
+    rect(x + 20 - innerSize / 2, y + 20 - innerSize / 2, innerSize, innerSize);
+}
 
-                        isFileSelected = false; // Reset after processing
-                    };
-                    imgObj.src = event.target.result;
-                };
-                reader.readAsDataURL(this.files[0]);
+function updateGrowth(index) {
+    let square = squares[index];
+    if (square.disturbed) {
+        if (square.expanding) {
+            square.growth += 1.0;  // Increment for expansion
+            if (square.growth >= maxGrowth) {
+                square.expanding = false;  // Start contracting
             }
-        });
-
-        document.getElementById("newUploadButton").addEventListener("click", function () {
-            document.getElementById("fileUpload").click();
-        });
-
-        document.getElementById("downloadButton").addEventListener("click", function () {
-            const dataUrl = canvas.toDataURL({ format: "png", quality: 0.8 });
-            var link = document.createElement("a");
-            link.download = "EPIC-PFP.png";
-            link.href = dataUrl;
-            console.log(dataUrl);
-            link.click();
-        });
-
-        document.getElementById("addTextButton").addEventListener("click", function () {
-            const text = document.getElementById("memeTextInput").value;
-            if (text) {
-                const memeText = new fabric.Text(text, {
-                    left: 50,
-                    top: 50,
-                    fontFamily: "FaceYourFears",
-                    fill: "#FFFFFF",
-                    fontSize: 24,
-                    fontWeight: "bold",
-                    stroke: "#000000",
-                    strokeWidth: 1,
-                    selectable: true,
-                });
-                canvas.add(memeText);
-                document.getElementById("memeTextInput").value = "";
-                canvas.setActiveObject(memeText);
-                canvas.renderAll();
-            }
-        });
-
-        async function searchMemes() {
-            const query = document.getElementById("searchQuery").value;
-            const thumbnailContainer = document.getElementById("thumbnailContainer");
-            const canvasContainer = document.getElementById("canvasContainer");
-            canvasContainer.style.display = "none";
-            if (query.length < 3) {
-                thumbnailContainer.innerHTML = "";
-                thumbnailContainer.style.display = "none";
-                canvasContainer.style.display = "flex";
-                return;
-            }
-            thumbnailContainer.style.display = "grid";
-            const url = `https://corsproxy.io/?https://imgflip.com/memesearch?q=${encodeURIComponent(query)}`;
-            const response = await fetch(url);
-            const text = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, "text/html");
-            const memeElements = doc.querySelectorAll(".mt-boxes .mt-box .mt-img-wrap a img");
-            thumbnailContainer.innerHTML = "";
-            let count = 0;
-            memeElements.forEach((meme) => {
-                if (count < 6) {
-                    const imgElement = document.createElement("img");
-                    imgElement.src = meme.src;
-                    imgElement.onclick = () => setMainImage(meme.src);
-                    thumbnailContainer.appendChild(imgElement);
-                    count++;
-                }
-            });
-        }
-
-        function setMainImage(src) {
-            var imgObj = new Image();
-            imgObj.crossOrigin = "anonymous";
-            imgObj.onload = function () {
-                setupCanvas(imgObj);
-                document.getElementById("thumbnailContainer").style.display = "none";
-                document.getElementById("canvasContainer").style.display = "flex";
-                document.getElementById("crownContainer").style.display = "flex";
-                // document.getElementById('uploadCrown').style.display = 'none';
-                document.getElementById("buttonContainer").style.display = "flex";
-                document.getElementById("textInputContainer").style.display = "flex";
-            };
-            imgObj.src = src;
-        }
-
-        function setupCanvas(imgObj) {
-            if (!canvas) {
-                canvas = new fabric.Canvas("canvas", { selection: false });
-            }
-            var maxCanvasWidth = window.innerWidth * (window.innerWidth > 768 ? 0.7 : 0.9);
-            var maxCanvasHeight = window.innerHeight * (window.innerHeight > 768 ? 0.7 : 0.9);
-            var scaleFactor = Math.min(maxCanvasWidth / imgObj.width, maxCanvasHeight / imgObj.height);
-            var canvasWidth = imgObj.width * scaleFactor;
-            var canvasHeight = imgObj.height * scaleFactor;
-            canvas.clear();
-            var image = new fabric.Image(imgObj, { selectable: false, evented: false });
-            image.scale(scaleFactor).set({
-                left: (canvasWidth - image.getScaledWidth()) / 2,
-                top: (canvasHeight - image.getScaledHeight()) / 2,
-            });
-            canvas.setDimensions({ width: canvasWidth, height: canvasHeight });
-            canvas.add(image);
-            canvas.centerObject(image);
-            canvas.renderAll();
-            document.getElementById("canvasContainer").style.display = "flex";
-        }
-
-        function addCrown(element) {
-            fabric.Image.fromURL(
-                element.src,
-                function (img) {
-                    var scale = 0.3 * (canvas.width / img.width);
-                    img.scale(scale).set({
-                        left: canvas.width / 2 - img.getScaledWidth() / 2,
-                        top: canvas.height / 2 - img.getScaledHeight() / 2,
-                        hasControls: true,
-                        hasBorders: true,
-                        selectable: true,
-                    });
-                    img.on("mousedown", function (event) {
-                        handleDoubleTap(event, function () {
-                            canvas.remove(img);
-                            canvas.renderAll();
-                        });
-                    });
-                    img.on("touchend", function (e) {
-                        handleDoubleTap(e, function () {
-                            canvas.remove(img);
-                            canvas.renderAll();
-                        });
-                    });
-                    canvas.add(img);
-                    canvas.setActiveObject(img);
-                    canvas.renderAll();
-                },
-                { crossOrigin: "anonymous" }
-            );
-        }
-
-        document.getElementById("searchQuery").addEventListener("input", searchMemes);
-    </script>
-    
-    <script>
-        let squares = [];
-        let cols, rows;
-        const maxGrowth = 40;
-
-        function setup() {
-            createCanvas(windowWidth, windowHeight);
-            cols = floor(width / 41.6);
-            rows = floor(height / 41.6);
-            for (let i = 0; i < cols * rows; i++) {
-                squares[i] = { disturbed: false, growth: 0, expanding: true, triggeredByClick: false };
-            }
-            frameRate(30);
-            noStroke();
-        }
-
-        function draw() {
-            background(0);
-            for (let i = 0; i < cols; i++) {
-                for (let j = 0; j < rows; j++) {
-                    let index = i + j * cols;
-                    let x = i * 41.6;
-                    let y = j * 41.6;
-                    drawGrowingSquare(x, y, squares[index].growth);
-                    updateGrowth(index);
-                }
+        } else {
+            square.growth -= 1.0;  // Decrement for contraction
+            if (square.growth <= 0) {
+                square.disturbed = false;
+                square.expanding = true;  // Reset for next potential expansion
+                square.triggeredByClick = false;  // Reset the trigger flag
             }
         }
+    }
+}
 
-        function drawGrowingSquare(x, y, growth) {
-            let size = map(growth, 0, maxGrowth, 0, 40);
-            let secondSize = map(growth, 0, maxGrowth, 0, 38.4);
-            let thirdSize = map(growth, 0, maxGrowth, 0, 34.4);
-            let innerSize = map(growth, 0, maxGrowth, 0, 23.2);
+function mousePressed() {
+    triggerRipple(Math.floor(mouseX / 41.6), Math.floor(mouseY / 41.6));
+}
 
-            fill(0);
-            rect(x, y, 40, 40);
-            fill(168, 36, 212);
-            rect(x + 20 - secondSize / 2, y + 20 - secondSize / 2, secondSize, secondSize);
-            fill(0);
-            rect(x + 20 - thirdSize / 2, y + 20 - thirdSize / 2, thirdSize, thirdSize);
-            fill(168, 36, 212);
-            rect(x + 20 - innerSize / 2, y + 20 - innerSize / 2, innerSize, innerSize);
-        }
-
-        function updateGrowth(index) {
-            let square = squares[index];
-            if (square.disturbed) {
-                if (square.expanding) {
-                    square.growth += 1.0;
-                    if (square.growth >= maxGrowth) {
-                        square.expanding = false;
-                    }
-                } else {
-                    square.growth -= 1.0;
-                    if (square.growth <= 0) {
-                        square.disturbed = false;
-                        square.expanding = true;
-                        square.triggeredByClick = false;
-                    }
-                }
-            }
-        }
-
-        function mousePressed() {
-            triggerRipple(Math.floor(mouseX / 41.6), Math.floor(mouseY / 41.6));
-        }
-
-        function triggerRipple(col, row) {
-            const maxRadius = Math.max(cols, rows);
-            for (let radius = 0; radius <= maxRadius; radius++) {
-                setTimeout(() => {
-                    for (let i = -radius; i <= radius; i++) {
-                        for (let j = -radius; j <= radius; j++) {
-                            if (i * i + j * j === radius * radius) {
-                                let x = col + i;
-                                let y = row + j;
-                                if (x >= 0 && x < cols && y >= 0 && y < rows) {
-                                    let index = x + y * cols;
-                                    if (!squares[index].disturbed) {
-                                        squares[index].disturbed = true;
-                                        squares[index].growth = 0;
-                                        squares[index.expanding = true];
-                                        squares[index].triggeredByClick = true;
-                                    }
-                                }
+function triggerRipple(col, row) {
+    const maxRadius = Math.max(cols, rows); // Maximum radius to propagate
+    for (let radius = 0; radius <= maxRadius; radius++) {
+        setTimeout(() => {
+            for (let i = -radius; i <= radius; i++) {
+                for (let j = -radius; j <= radius; j++) {
+                    if (i * i + j * j === radius * radius) { // Circular propagation only at exact radius
+                        let x = col + i;
+                        let y = row + j;
+                        if (x >= 0 && x < cols && y >= 0 && y < rows) {
+                            let index = x + y * cols;
+                            if (!squares[index].disturbed) {
+                                squares[index].disturbed = true;
+                                squares[index].growth = 0;
+                                squares[index].expanding = true;
+                                squares[index].triggeredByClick = true;
                             }
                         }
                     }
-                }, radius * 50);
-            }
-        }
-
-        function mouseMoved() {
-            checkHoverDisturbance(mouseX, mouseY);
-        }
-
-        function checkHoverDisturbance(x, y) {
-            let col = Math.floor(x / 41.6);
-            let row = Math.floor(y / 41.6);
-            if (col >= 0 && col < cols && row >= 0 && row < rows) {
-                let index = col + row * cols;
-                if (!squares[index].disturbed) {
-                    squares[index].disturbed = true;
-                    squares[index].growth = 0;
-                    squares[index].expanding = true;
-                    squares[index].triggeredByClick = false;
                 }
             }
-        }
+        }, radius * 50); // Delay each radius increment to simulate ripple effect
+    }
+}
 
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-            cols = floor(width / 41.6);
-            rows = floor(height / 41.6);
-            squares = Array(cols * rows).fill().map(() => ({ disturbed: false, growth: 0, expanding: true, triggeredByClick: false }));
+function mouseMoved() {
+    checkHoverDisturbance(mouseX, mouseY);
+}
+
+function checkHoverDisturbance(x, y) {
+    let col = Math.floor(x / 41.6);
+    let row = Math.floor(y / 41.6);
+    if (col >= 0 && col < cols && row >= 0 && row < rows) {
+        let index = col + row * cols;
+        if (!squares[index].disturbed) {
+            squares[index].disturbed = true;
+            squares[index].growth = 0;  // Start growth from zero
+            squares[index].expanding = true;  // Ensure we start by expanding
+            squares[index].triggeredByClick = false;  // This disturbance is not triggered by a click
         }
-    </script>
+    }
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    cols = floor(width / 41.6);
+    rows = floor(height / 41.6);
+    squares = Array(cols * rows).fill().map(() => ({ disturbed: false, growth: 0, expanding: true, triggeredByClick: false }));
+}
+</script>
 </body>
 </html>
