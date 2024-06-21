@@ -84,12 +84,12 @@ function updateGrowth(index) {
 }
 
 function mousePressed() {
-    triggerRipple(Math.floor(mouseX / 41.6), Math.floor(mouseY / 41.6));
+    if (!isTouchDevice) {
+        triggerRipple(Math.floor(mouseX / 41.6), Math.floor(mouseY / 41.6));
+    }
 }
 
 function triggerRipple(col, row) {
-    if (isTouchDevice) return;  // Do not trigger ripple effect on touch devices
-
     const maxRadius = Math.max(cols, rows); // Maximum radius to propagate
     for (let radius = 0; radius <= maxRadius; radius++) {
         setTimeout(() => {
@@ -140,13 +140,6 @@ function touchStarted() {
 function touchMoved() {
     for (let i = 0; i < touches.length; i++) {
         checkHoverDisturbance(touches[i].x, touches[i].y);
-    }
-    return false;  // Prevent default behavior
-}
-
-function touchEnded() {
-    if (!isTouchDevice) {
-        triggerRipple(Math.floor(touches[0].x / 41.6), Math.floor(touches[0].y / 41.6));
     }
     return false;  // Prevent default behavior
 }
