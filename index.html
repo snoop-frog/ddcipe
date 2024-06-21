@@ -124,6 +124,16 @@ function checkHoverDisturbance(x, y) {
     }
 }
 
+function touchMoved() {
+    checkHoverDisturbance(touchX, touchY);
+    return false;  // Prevent default behavior
+}
+
+function touchEnded() {
+    triggerRipple(Math.floor(touchX / 41.6), Math.floor(touchY / 41.6));
+    return false;  // Prevent default behavior
+}
+
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     cols = floor(width / 41.6);
