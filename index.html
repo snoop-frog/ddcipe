@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Grid with Ripple and Hover Effects</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
@@ -110,6 +110,11 @@ function mouseMoved() {
     checkHoverDisturbance(mouseX, mouseY);
 }
 
+function touchMoved() {
+    checkHoverDisturbance(mouseX, mouseY);
+    return false;  // Prevent default touch behavior
+}
+
 function checkHoverDisturbance(x, y) {
     let col = Math.floor(x / 41.6);
     let row = Math.floor(y / 41.6);
@@ -122,23 +127,6 @@ function checkHoverDisturbance(x, y) {
             squares[index].triggeredByClick = false;  // This disturbance is not triggered by a click
         }
     }
-}
-
-function touchStarted() {
-    checkHoverDisturbance(touches[0].x, touches[0].y);
-    return false;  // Prevent default behavior
-}
-
-function touchMoved() {
-    for (let i = 0; i < touches.length; i++) {
-        checkHoverDisturbance(touches[i].x, touches[i].y);
-    }
-    return false;  // Prevent default behavior
-}
-
-function touchEnded() {
-    triggerRipple(Math.floor(touches[0].x / 41.6), Math.floor(touches[0].y / 41.6));
-    return false;  // Prevent default behavior
 }
 
 function windowResized() {
