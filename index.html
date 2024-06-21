@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Interactive Grid with Ripple and Hover Effects</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
@@ -78,7 +78,6 @@ function updateGrowth(index) {
 }
 
 function mousePressed() {
-    console.log("mousePressed detected");
     triggerRipple(Math.floor(mouseX / 41.6), Math.floor(mouseY / 41.6));
 }
 
@@ -126,20 +125,19 @@ function checkHoverDisturbance(x, y) {
 }
 
 function touchStarted() {
-    console.log("touchStarted detected");
-    checkHoverDisturbance(touchX, touchY);
+    checkHoverDisturbance(touches[0].x, touches[0].y);
     return false;  // Prevent default behavior
 }
 
 function touchMoved() {
-    console.log("touchMoved detected");
-    checkHoverDisturbance(touchX, touchY);
+    for (let i = 0; i < touches.length; i++) {
+        checkHoverDisturbance(touches[i].x, touches[i].y);
+    }
     return false;  // Prevent default behavior
 }
 
 function touchEnded() {
-    console.log("touchEnded detected");
-    triggerRipple(Math.floor(touchX / 41.6), Math.floor(touchY / 41.6));
+    triggerRipple(Math.floor(touches[0].x / 41.6), Math.floor(touches[0].y / 41.6));
     return false;  // Prevent default behavior
 }
 
